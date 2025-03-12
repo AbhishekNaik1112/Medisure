@@ -9,7 +9,6 @@ export class AuthController {
   async login(@Body() loginDto: { email: string; password: string }) {
     const token = await this.authService.validateUser(loginDto.email, loginDto.password);
     const role = await this.authService.getRole(loginDto.email,loginDto.password);
-    console.log(token,role);
     if (!token) {
       throw new UnauthorizedException('Invalid credentials');
     }

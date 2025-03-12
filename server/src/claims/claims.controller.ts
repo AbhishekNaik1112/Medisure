@@ -9,7 +9,6 @@ export class ClaimsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() createClaimDto: any) {
-    console.log(createClaimDto);
     return this.claimsService.createClaim(createClaimDto);
   }
 
