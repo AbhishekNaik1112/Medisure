@@ -18,7 +18,14 @@ export class User {
 
   @Prop({ required: true, enum: UserRole })
   role!: UserRole;
-    _id: any;
+
+  @Prop({ required: function (this: User) { return this.role === UserRole.INSURER; } })
+  companyName?: string;
+
+  @Prop({ required: function (this: User) { return this.role === UserRole.INSURER; } })
+  licenseNumber?: string;
+
+  _id: any;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,12 +1,12 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 
 export type ClaimDocument = Claim & Document;
 
 export enum ClaimStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
 }
 
 @Schema({ timestamps: true })
@@ -20,6 +20,9 @@ export class Claim {
   @Prop({ required: true })
   amount!: number;
 
+  @Prop({ required: false })
+  approvedAmount!: number;
+
   @Prop()
   description!: string;
 
@@ -27,7 +30,7 @@ export class Claim {
   status!: ClaimStatus;
 
   @Prop()
-  supportingDocuments!: string[]; 
+  supportingDocuments!: string[];
 
   @Prop()
   insurerComments?: string;

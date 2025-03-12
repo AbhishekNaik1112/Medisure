@@ -17,4 +17,12 @@ export class AuthService {
     }
     return null;
   }
+
+  async getRole(email: string,password:string): Promise<string | null> {
+    const user = await this.usersService.findByEmail(email);
+    if (user && user.password === password) {
+      return user.role;
+    }
+    return null;
+  }
 }
