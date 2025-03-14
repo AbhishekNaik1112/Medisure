@@ -9,11 +9,11 @@ const PatientRegister = () => {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -27,7 +27,7 @@ const PatientRegister = () => {
       setTimeout(() => {
         navigate('/patient-dashboard');
       }, 1500);
-    } catch (error) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);
@@ -84,7 +84,10 @@ const PatientRegister = () => {
         </form>
         <div className="text-center text-sm text-gray-600">
           Already have an account?
-          <button onClick={() => navigate('/login')} className="ml-1 text-blue-500 underline cursor-pointer">
+          <button
+            onClick={() => navigate('/login')}
+            className="ml-1 text-blue-500 underline cursor-pointer"
+          >
             Login here
           </button>
         </div>

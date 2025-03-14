@@ -92,7 +92,7 @@ const PatientDashboard = () => {
       });
 
       const data = await res.json();
-      console.log(data.secure_url);
+      // console.log(data.secure_url);
       return data.secure_url;
     } catch (error) {
       console.error('Error uploading to Cloudinary:', error);
@@ -316,7 +316,12 @@ const PatientDashboard = () => {
               className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
               accept="image/jpeg,image/png,image/jpg"
             />
-
+            {isLoading && (
+              <div className="text-center mt-2">
+                <span className="animate-spin inline-block w-6 h-6 border-4 border-gray-300 border-t-black rounded-full"></span>
+                <p className="text-gray-500 text-sm mt-1">Uploading...</p>
+              </div>
+            )}
             <div className="flex justify-between mt-4">
               <button
                 onClick={() => setIsNewClaimModalOpen(false)}
@@ -326,9 +331,14 @@ const PatientDashboard = () => {
               </button>
               <button
                 onClick={handleSubmitClaim}
-                className="px-4 py-2 bg-black text-white rounded-lg"
+                className={`px-4 py-2 rounded-lg transition ${
+                  isLoading
+                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                    : 'bg-black text-white hover:opacity-80'
+                }`}
+                disabled={isLoading}
               >
-                Submit
+                {isLoading ? 'Uploading...' : 'Submit'}
               </button>
             </div>
           </div>
