@@ -1,105 +1,97 @@
-"use client"
-
-import type React from "react"
-import { useState } from "react"
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
+import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { Lock, Mail, Loader } from "lucide-react";
 
 const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "" })
-  const navigate = useNavigate()
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:3000/auth/login", form)
-      const { role, token } = response.data
+      const response = await axios.post(`http://localhost:3000/auth/login`, form);
+      const { role, token } = response.data;
 
-      if (role) {
-        localStorage.setItem("token", token)
-        localStorage.setItem("role", role)
-
-        navigate(role === "patient" ? "/patient-dashboard" : "/insurer-dashboard")
+      if (role && token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
+        localStorage.setItem("email", form.email);
+        navigate(role === "patient" ? "/patient-dashboard" : "/insurer-dashboard");
       } else {
-        alert("Invalid login response. No role found.")
+        alert("Invalid login response. Please try again.");
       }
     } catch (error) {
-      console.error("Login failed", error)
-      alert("Invalid email or password. Please try again.")
+      console.error("Login failed", error);
+      if (axios.isAxiosError(error) && error.response) {
+        alert(error.response.data?.message || "Invalid email or password.");
+      } else {
+        alert("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Login to Your Account</CardTitle>
-          <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 text-black font-sans">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold text-center">Welcome Back</h2>
+        <p className="text-gray-600 text-center mt-2">Sign in to continue</p>
+        <form onSubmit={handleSubmit} className="mt-6">
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium">Email</label>
+            <div className="relative flex items-center">
+              <Mail className="absolute left-3 text-gray-400" size={20} />
+              <input
                 id="email"
                 type="email"
                 name="email"
                 placeholder="Enter your email"
                 onChange={handleChange}
                 required
+                className="w-full pl-10 p-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
+          </div>
+          <div className="mb-6">
+            <label htmlFor="password" className="block text-sm font-medium">Password</label>
+            <div className="relative flex items-center">
+              <Lock className="absolute left-3 text-gray-400" size={20} />
+              <input
                 id="password"
                 type="password"
                 name="password"
                 placeholder="Enter your password"
                 onChange={handleChange}
                 required
+                className="w-full pl-10 p-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black"
               />
             </div>
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter>
-          <div className="w-full space-y-4">
-            <div className="text-center text-sm text-muted-foreground">
-              Don't have an account?
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/patient-register")}
-                className="w-full"
-              >
-                Register as Patient
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/insurer-register")}
-                className="w-full"
-              >
-                Register as Insurer
-              </Button>
-            </div>
           </div>
-        </CardFooter>
-      </Card>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black text-white py-2 rounded-lg flex items-center justify-center gap-2 text-lg font-medium hover:scale-105 duration-300 cursor-pointer"
+          >
+            {loading ? <Loader className="animate-spin" size={20} /> : "Login"}
+          </button>
+        </form>
+        <p className="text-center text-gray-600 mt-4">Don't have an account?</p>
+        <div className="flex flex-col mt-2 gap-2">
+          <button onClick={() => navigate("/patient-register")} className="w-full border border-black text-black py-2 rounded-lg hover:scale-105 duration-300 cursor-pointer">Register as a Patient</button>
+          <button onClick={() => navigate("/insurer-register")} className="w-full border border-black text-black py-2 rounded-lg hover:scale-105 duration-300 cursor-pointer">Register as an Insurer</button>
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

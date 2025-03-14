@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ClaimsService } from './claims.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -14,8 +14,8 @@ export class ClaimsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll() {
-    return this.claimsService.findAll();
+  async findAll(@Query('patientEmail') patientEmail?: string) {
+    return this.claimsService.findAll(patientEmail);
   }
 
   @UseGuards(JwtAuthGuard)

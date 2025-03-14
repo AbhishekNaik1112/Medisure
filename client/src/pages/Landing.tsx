@@ -1,170 +1,125 @@
-import { useNavigate } from "react-router-dom"
-import { Button } from "../components/ui/button"
+import { useNavigate } from 'react-router-dom';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card"
-import {
-  Shield,
-  FileCheck,
-  Clock,
   ArrowRight,
-  CheckCircle2,
-  HeartPulse,
+  Shield,
+  Clock,
+  Heart,
   Wallet,
-  BadgeCheck,
-} from "lucide-react"
+  CheckCircle,
+  FileText,
+  Timer,
+  CreditCard,
+} from 'lucide-react';
 
 const Landing = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const features = [
     {
-      icon: <Clock className="h-6 w-6 text-primary" />,
-      title: "Quick Processing",
-      description: "Get your claims processed within 24-48 hours",
+      icon: <Clock size={40} />,
+      title: 'Quick Processing',
+      description: 'Get your claims processed within 24-48 hours.',
     },
     {
-      icon: <HeartPulse className="h-6 w-6 text-primary" />,
-      title: "Health First",
-      description: "Focus on recovery while we handle the paperwork",
+      icon: <Heart size={40} />,
+      title: 'Health First',
+      description: 'Focus on recovery while we handle the paperwork.',
     },
     {
-      icon: <Wallet className="h-6 w-6 text-primary" />,
-      title: "Easy Reimbursement",
-      description: "Direct deposits to your preferred bank account",
+      icon: <Wallet size={40} />,
+      title: 'Easy Reimbursement',
+      description: 'Direct deposits to your preferred bank account.',
     },
     {
-      icon: <BadgeCheck className="h-6 w-6 text-primary" />,
-      title: "Trusted Service",
-      description: "Over 10,000 claims processed successfully",
+      icon: <CheckCircle size={40} />,
+      title: 'Trusted Service',
+      description: 'Over 10,000 claims processed successfully.',
     },
-  ]
+  ];
+
+  const processSteps = [
+    {
+      icon: <FileText size={40} />,
+      title: '1. Submit Claim',
+      desc: 'Fill out our simple form and upload your documents.',
+    },
+    {
+      icon: <Timer size={40} />,
+      title: '2. Quick Review',
+      desc: 'Our team reviews your claim within 24 hours.',
+    },
+    {
+      icon: <CreditCard size={40} />,
+      title: '3. Get Reimbursed',
+      desc: 'Receive your payment directly in your account.',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16 md:py-24">
-        <div className="flex flex-col items-center text-center space-y-8">
-          <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full">
-            <Shield className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
-            Insurance Claims{" "}
-            <span className="text-primary">Made Simple</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-[600px]">
-            Submit and manage your insurance claims with ease. Our streamlined
-            process ensures quick approvals and faster reimbursements.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button
-              size="lg"
-              onClick={() => navigate("/login")}
-              className="text-lg"
-            >
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-     
-          </div>
-        </div>
+    <div className="min-h-screen bg-white text-black font-sans">
+      <div className="flex flex-col items-center justify-center text-center p-16 border-b border-gray-300">
+        <Shield size={56} className="mb-6" />
+        <h1 className="text-5xl font-extrabold tracking-tight">Insurance Claims Made Simple</h1>
+        <p className="mt-4 max-w-2xl text-lg text-gray-700">
+          Submit and manage your insurance claims with ease. Our streamlined process ensures quick
+          approvals and faster reimbursements.
+        </p>
+        <button
+          className="mt-6 px-8 py-3 bg-black text-white rounded-lg flex items-center gap-3 text-lg font-medium hover:scale-105 duration-300 cursor-pointer"
+          onClick={() => navigate('/login')}
+        >
+          Get Started <ArrowRight size={24} />
+        </button>
       </div>
-
-      {/* Features Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">Why Choose Us</h2>
-          <p className="text-muted-foreground max-w-[600px] mx-auto">
-            Experience a hassle-free claims process with our modern platform
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="text-center p-16">
+        <h2 className="text-3xl font-bold">Why Choose Us</h2>
+        <p className="text-gray-600 mt-4 text-lg">
+          Experience a hassle-free claims process with our modern platform.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
           {features.map((feature, index) => (
-            <Card key={index} className="border-none shadow-lg">
-              <CardHeader>
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  {feature.icon}
-                </div>
-                <CardTitle>{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </CardContent>
-            </Card>
+            <div
+              key={index}
+              className="flex flex-col items-center p-6 border border-gray-300 rounded-lg shadow-sm"
+            >
+              {feature.icon}
+              <h3 className="text-xl font-semibold mt-4">{feature.title}</h3>
+              <p className="text-gray-600 text-md mt-2 text-center">{feature.description}</p>
+            </div>
           ))}
         </div>
       </div>
-
-      {/* Process Section */}
-      <div className="container mx-auto px-4 py-16">
-        <Card className="border-2 border-primary/20">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">How It Works</CardTitle>
-            <CardDescription>
-              Three simple steps to process your claim
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <FileCheck className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold">1. Submit Claim</h3>
-                <p className="text-muted-foreground">
-                  Fill out our simple form and upload your documents
-                </p>
-              </div>
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold">2. Quick Review</h3>
-                <p className="text-muted-foreground">
-                  Our team reviews your claim within 24 hours
-                </p>
-              </div>
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold">3. Get Reimbursed</h3>
-                <p className="text-muted-foreground">
-                  Receive your payment directly in your account
-                </p>
-              </div>
+      <div className="text-center p-16 bg-gray-100">
+        <h2 className="text-3xl font-bold">How It Works</h2>
+        <p className="text-gray-600 mt-4 text-lg">Three simple steps to process your claim.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
+          {processSteps.map((step, index) => (
+            <div
+              key={index}
+              className="flex flex-col items-center p-6 border border-gray-300 rounded-lg shadow-sm"
+            >
+              {step.icon}
+              <h3 className="text-xl font-semibold mt-4">{step.title}</h3>
+              <p className="text-gray-600 text-md mt-2 text-center">{step.desc}</p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* CTA Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="bg-primary text-primary-foreground rounded-3xl p-8 md:p-16 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-lg mb-8 opacity-90 max-w-[600px] mx-auto">
-            Join thousands of satisfied customers who have simplified their
-            insurance claims process with us.
-          </p>
-          <Button
-            size="lg"
-            variant="secondary"
-            onClick={() => navigate("/login")}
-            className="text-lg"
-          >
-            Get Started
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+          ))}
         </div>
       </div>
+      <div className="flex flex-col items-center justify-center text-center p-16">
+        <h2 className="text-3xl font-bold">Ready to Get Started?</h2>
+        <p className="text-gray-600 mt-4 text-lg">
+          Join thousands of satisfied customers who have simplified their insurance claims process
+          with us.
+        </p>
+        <button
+          className="mt-6 px-8 py-3 bg-black text-white rounded-lg flex items-center gap-3 text-lg font-medium hover:scale-105 duration-300 cursor-pointer"
+          onClick={() => navigate('/login')}
+        >
+          Get Started <ArrowRight size={24} />
+        </button>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Landing
+export default Landing;

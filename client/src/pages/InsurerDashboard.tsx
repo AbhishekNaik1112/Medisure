@@ -1,350 +1,244 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import { Textarea } from "../components/ui/textarea"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select"
-import {
-  LogOut,
-  FileText,
-  CheckCircle2,
-  XCircle,
+  CheckCircle,
   Clock,
-  FileCheck,
-  Link as LinkIcon,
+  AlertCircle,
+  X,
+  LogOut,
+  Loader2,
   RotateCw,
-} from "lucide-react"
-import { Badge } from "../components/ui/badge"
-
-interface Claim {
-  _id: string
-  amount: number
-  approvedAmount?: number
-  status: string
-  createdAt: string
-  patientName: string
-  patientEmail: string
-  description: string
-  supportingDocuments?: string[]
-}
+} from 'lucide-react';
 
 const InsurerDashboard = () => {
-  const navigate = useNavigate()
-  const [claims, setClaims] = useState<Claim[]>([])
-  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null)
-  const [filter, setFilter] = useState("all")
-  const [approvedAmount, setApprovedAmount] = useState("")
-  const [insurerComments, setInsurerComments] = useState("")
-  const [isReviewOpen, setIsReviewOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate();
+  const [claims, setClaims] = useState<
+    { _id: string; createdAt: string; patientName: string; amount: number; status: string }[]
+  >([]);
+  const [selectedClaim, setSelectedClaim] = useState<{
+    _id: string;
+    createdAt: string;
+    patientName: string;
+    amount: number;
+    status: string;
+  } | null>(null);
+  const [filter, setFilter] = useState('all');
+  const [approvedAmount, setApprovedAmount] = useState('');
+  const [insurerComments, setInsurerComments] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchClaims = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/claims", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
-        setClaims(response.data)
-      } catch (error) {
-        console.error("Error fetching claims:", error)
-      }
-    }
-    fetchClaims()
-  }, [])
+    fetchClaims();
+  }, []);
 
   const fetchClaims = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await axios.get("http://localhost:3000/claims", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      setClaims(response.data)
+      const response = await axios.get('http://localhost:3000/claims', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setClaims(response.data);
     } catch (error) {
-      console.error("Failed to fetch claims", error)
+      console.error('Error:', error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem("role")
-    localStorage.removeItem("token")
-    navigate("/")
-  }
+    localStorage.removeItem('role');
+    localStorage.removeItem('token');
+    navigate('/');
+  };
 
-  const handleStatusUpdate = async (status: string): Promise<void> => {
-    if (!selectedClaim) return
-    const payload = { status, approvedAmount, insurerComments }
+  const handleStatusUpdate = async (status: string) => {
+    if (!selectedClaim) return;
+    setIsLoading(true);
     try {
       await axios.patch(
         `http://localhost:3000/claims/${selectedClaim._id}`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      )
-      // Refresh claims
-      const response = await axios.get("http://localhost:3000/claims", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      setClaims(response.data)
-      setIsReviewOpen(false)
-      setSelectedClaim(null)
-      setApprovedAmount("")
-      setInsurerComments("")
+        { status, approvedAmount, insurerComments },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } },
+      );
+      fetchClaims();
+      setSelectedClaim(null);
     } catch (error) {
-      console.error("Error updating claim:", error)
+      console.error('Error updating claim:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "approved":
-        return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-            <CheckCircle2 className="w-4 h-4 mr-1" />
-            Approved
-          </Badge>
-        )
-      case "rejected":
-        return (
-          <Badge variant="destructive">
-            <XCircle className="w-4 h-4 mr-1" />
-            Rejected
-          </Badge>
-        )
-      default:
-        return (
-          <Badge variant="secondary">
-            <Clock className="w-4 h-4 mr-1" />
-            Pending
-          </Badge>
-        )
-    }
-  }
-
-  const openReviewDialog = (claim: Claim) => {
-    setSelectedClaim(claim)
-    setApprovedAmount(claim.approvedAmount?.toString() || "")
-    setInsurerComments("")
-    setIsReviewOpen(true)
-  }
+  };
 
   const filteredClaims = claims.filter(
-    (claim) => filter === "all" || claim.status.toLowerCase() === filter
-  )
+    (claim) => filter === 'all' || claim.status.toLowerCase() === filter,
+  );
+
+  const statusBadge = (status: string) => {
+    const baseStyle = 'px-3 py-1 rounded-full text-sm font-semibold';
+    switch (status) {
+      case 'approved':
+        return (
+          <span className={`${baseStyle} bg-green-500 text-white`}>
+            <CheckCircle size={14} className="inline-block mr-1" /> Approved
+          </span>
+        );
+      case 'pending':
+        return (
+          <span className={`${baseStyle} bg-orange-500 text-white`}>
+            <Clock size={14} className="inline-block mr-1" /> Pending
+          </span>
+        );
+      case 'rejected':
+        return (
+          <span className={`${baseStyle} bg-red-500 text-white`}>
+            <AlertCircle size={14} className="inline-block mr-1" /> Rejected
+          </span>
+        );
+      default:
+        return <span className={`${baseStyle} bg-gray-300`}>Unknown</span>;
+    }
+  };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-white text-black font-sans">
+      <div className="flex justify-between items-center p-6 shadow-lg border-b border-gray-300 rounded-lg">
         <div className="flex items-center gap-2">
-          <FileCheck className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">Insurer Dashboard</h1>
         </div>
-        <div className="flex gap-4">
-        <Button variant="outline" onClick={fetchClaims} disabled={isLoading}>
-            <RotateCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        <Button variant="destructive" onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </Button>
+        <div className="flex gap-3">
+          <button
+            onClick={fetchClaims}
+            disabled={isLoading}
+            className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition shadow-md"
+          >
+            {isLoading ? <Loader2 className="animate-spin" /> : <RotateCw />} Refresh
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition shadow-md"
+          >
+            <LogOut /> Logout
+          </button>
+        </div>
       </div>
-      </div>
-      <div className="mb-6">
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Claims</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <select
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        className="px-4 py-2 bg-white shadow-sm rounded-lg mt-6 mb-4"
+      >
+        <option value="all">All Claims</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Claims Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {claims.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <p className="mt-4 text-lg text-muted-foreground">
-                No claims available for review.
+      <div className="overflow-x-auto">
+        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
+          <table className="w-full text-black text-center">
+            <thead>
+              <tr className="bg-black text-white">
+                <th className="p-4 text-left">Date</th>
+                <th className="p-4 text-left">Patient</th>
+                <th className="p-4 text-left">Amount</th>
+                <th className="p-4 text-left">Status</th>
+                <th className="p-4 text-left">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredClaims.map((claim) => (
+                <tr key={claim._id} className="hover:bg-gray-200 transition">
+                  <td className="p-4">{new Date(claim.createdAt).toLocaleDateString()}</td>
+                  <td className="p-4">{claim.patientName}</td>
+                  <td className="p-4">₹{claim.amount}</td>
+                  <td className="p-4">{statusBadge(claim.status)}</td>
+                  <td className="p-4">
+                    <button
+                      onClick={() => setSelectedClaim(claim)}
+                      className="px-4 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition shadow-md"
+                    >
+                      Review
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {selectedClaim && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg w-96 text-black shadow-xl">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold">Review Claim</h3>
+              <button
+                onClick={() => setSelectedClaim(null)}
+                className="text-gray-500 hover:text-black"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <p>
+                <strong>Patient:</strong> {selectedClaim.patientName}
               </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Patient</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClaims.map((claim) => (
-                  <TableRow key={claim._id}>
-                    <TableCell>
-                      {new Date(claim.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{claim.patientName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {claim.patientEmail}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>₹{claim.amount}</TableCell>
-                    <TableCell>{getStatusBadge(claim.status)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openReviewDialog(claim)}
-                      >
-                        Review
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Review Claim</DialogTitle>
-          </DialogHeader>
-          {selectedClaim && (
-            <div className="space-y-6">
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Patient</Label>
-                  <div className="col-span-3">
-                    <p className="font-medium">{selectedClaim.patientName}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedClaim.patientEmail}
-                    </p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Amount</Label>
-                  <div className="col-span-3">
-                    <p className="font-medium">₹{selectedClaim.amount}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Description</Label>
-                  <div className="col-span-3">
-                    <p>{selectedClaim.description}</p>
-                  </div>
-                </div>
-                {(selectedClaim.supportingDocuments ?? []).length > 0 && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Documents</Label>
-                    <div className="col-span-3 space-y-2">
-                      {selectedClaim.supportingDocuments?.map((doc, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          size="sm"
-                          className="w-full justify-start"
-                          asChild
-                        >
-                          <a
-                            href={doc}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <LinkIcon className="mr-2 h-4 w-4" />
-                            Document {index + 1}
-                          </a>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="approvedAmount" className="text-right">
-                    Approved Amount
-                  </Label>
-                  <Input
-                    id="approvedAmount"
-                    type="number"
-                    value={approvedAmount}
-                    onChange={(e) => setApprovedAmount(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="comments" className="text-right">
-                    Comments
-                  </Label>
-                  <Textarea
-                    id="comments"
-                    value={insurerComments}
-                    onChange={(e) => setInsurerComments(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
+              <p>
+                <strong>Amount:</strong> ₹{selectedClaim.amount}
+              </p>
+              <p>
+                <strong>Status:</strong> {statusBadge(selectedClaim.status)}{' '}
+              </p>
+              <div className="mt-4">
+                <label className="block mb-2" htmlFor="approvedAmount">
+                  Approved Amount
+                </label>
+                <input
+                  type="number"
+                  id="approvedAmount"
+                  value={approvedAmount}
+                  onChange={(e) => setApprovedAmount(e.target.value)}
+                  className="w-full p-2 rounded mb-4 border shadow-sm"
+                  placeholder="Enter approved amount"
+                />
+                <label className="block mb-2" htmlFor="insurerComments">
+                  Insurer Comments
+                </label>
+                <textarea
+                  id="insurerComments"
+                  value={insurerComments}
+                  onChange={(e) => setInsurerComments(e.target.value)}
+                  className="w-full p-2 rounded mb-4 border shadow-sm"
+                  placeholder="Enter your comments"
+                />
               </div>
-              <div className="flex justify-end gap-4">
-                <Button
-                  variant="destructive"
-                  onClick={() => handleStatusUpdate("rejected")}
+
+              <div className="flex gap-4 mt-4">
+                <button
+                  onClick={() => handleStatusUpdate('approved')}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 shadow-md"
                 >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Reject
-                </Button>
-                <Button
-                  variant="default"
-                  onClick={() => handleStatusUpdate("approved")}
-                >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
                   Approve
-                </Button>
+                </button>
+                <button
+                  onClick={() => handleStatusUpdate('rejected')}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md"
+                >
+                  Reject
+                </button>
+                <button
+                  onClick={() => setSelectedClaim(null)}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 shadow-md"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default InsurerDashboard
+export default InsurerDashboard;

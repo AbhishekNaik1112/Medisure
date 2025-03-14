@@ -12,7 +12,10 @@ export class ClaimsService {
     return createdClaim.save();
   }
 
-  async findAll(): Promise<Claim[]> {
+  async findAll(patientEmail?: string): Promise<Claim[]> {
+    if (patientEmail) {
+      return this.claimModel.find({ patientEmail }).exec();
+    }
     return this.claimModel.find().exec();
   }
 

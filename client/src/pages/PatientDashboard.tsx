@@ -1,428 +1,319 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import axios from "axios"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../components/ui/dialog"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import { Textarea } from "../components/ui/textarea"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table"
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   LogOut,
   PlusCircle,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  FileText,
   Eye,
-  Link as LinkIcon,
   RotateCw,
-} from "lucide-react"
-import { Badge } from "../components/ui/badge"
-import { Separator } from "../components/ui/separator"
+  X,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+} from 'lucide-react';
 
 interface Claim {
-  _id: string
-  amount: number
-  approvedAmount: number
-  status: string
-  createdAt: string
-  description: string
-  patientName: string
-  patientEmail: string
-  insurerComments?: string
-  supportingDocuments?: string[]
+  _id: string;
+  amount: number;
+  approvedAmount: number;
+  status: string;
+  createdAt: string;
+  description: string;
+  patientName: string;
+  patientEmail: string;
+  insurerComments?: string;
+  supportingDocuments?: string;
 }
 
 const PatientDashboard = () => {
-  const navigate = useNavigate()
-  const [isOpen, setIsOpen] = useState(false)
-  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null)
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [form, setForm] = useState<{
-    name: string
-    email: string
-    amount: string
-    approvedAmount?: string
-    description: string
-    file: File | null
-  }>({
-    name: "",
-    email: "",
-    amount: "",
-    approvedAmount: "",
-    description: "",
-    file: null,
-  })
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [isNewClaimModalOpen, setIsNewClaimModalOpen] = useState(false);
 
-  const [claims, setClaims] = useState<Claim[]>([])
+  const [newClaim, setNewClaim] = useState({
+    patientName: '',
+    patientEmail: '',
+    description: '',
+    amount: '',
+    supportingDocuments: '',
+  });
 
   const fetchClaims = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await axios.get("http://localhost:3000/claims", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      setClaims(response.data)
-    } catch (error) {
-      console.error("Failed to fetch claims", error)
+      const email = localStorage.getItem('email');
+      const response = await axios.get('http://localhost:3000/claims', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        params: { patientEmail: email },
+      });
+      setClaims(response.data);
+    } catch {
+      console.error('Error fetching claims');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchClaims()
-  }, [])
+    fetchClaims();
+  }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    if (e.target instanceof HTMLInputElement && e.target.type === "file") {
-      const files = e.target.files
-      setForm({
-        ...form,
-        file: files?.[0] || null,
-      })
-    } else {
-      setForm({ ...form, [e.target.name]: e.target.value })
-    }
-  }
+  const handleViewClaim = (claim: Claim) => {
+    setSelectedClaim(claim);
+    setIsModalOpen(true);
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const formData = new FormData()
-    formData.append("patientName", form.name)
-    formData.append("patientEmail", form.email)
-    formData.append("amount", form.amount)
-    formData.append("description", form.description)
-    if (form.file) formData.append("file", form.file)
+  const handleNewClaim = () => {
+    setIsNewClaimModalOpen(true);
+  };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewClaim((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmitClaim = async () => {
     try {
-      await axios.post("http://localhost:3000/claims", formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      })
-      setIsOpen(false)
-      setForm({ name: "", email: "", amount: "", description: "", file: null, approvedAmount: "" })
-      fetchClaims()
+      await axios.post('http://localhost:3000/claims', newClaim, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+
+      setIsNewClaimModalOpen(false);
+      fetchClaims();
     } catch (error) {
-      console.error("Claim submission failed", error)
+      console.error('Error submitting claim:', error);
     }
-  }
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem("role")
-    localStorage.removeItem("token")
-    navigate("/")
-  }
+    localStorage.removeItem('role');
+    localStorage.removeItem('token');
+    navigate('/');
+  };
 
-  const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "approved":
+  const statusBadge = (status: string) => {
+    const baseStyle = 'px-3 py-1 rounded-full text-sm font-semibold';
+    switch (status) {
+      case 'approved':
         return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-            <CheckCircle2 className="w-4 h-4 mr-1" />
-            Approved
-          </Badge>
-        )
-      case "rejected":
+          <span className={`${baseStyle} bg-green-500 text-white`}>
+            <CheckCircle size={14} className="inline-block mr-1" /> Approved
+          </span>
+        );
+      case 'pending':
         return (
-          <Badge variant="destructive">
-            <XCircle className="w-4 h-4 mr-1" />
-            Rejected
-          </Badge>
-        )
+          <span className={`${baseStyle} bg-orange-500 text-white`}>
+            <Clock size={14} className="inline-block mr-1" /> Pending
+          </span>
+        );
+      case 'rejected':
+        return (
+          <span className={`${baseStyle} bg-red-500 text-white`}>
+            <AlertCircle size={14} className="inline-block mr-1" /> Rejected
+          </span>
+        );
       default:
-        return (
-          <Badge variant="secondary">
-            <Clock className="w-4 h-4 mr-1" />
-            Pending
-          </Badge>
-        )
+        return <span className={`${baseStyle} bg-gray-300`}>Unknown</span>;
     }
-  }
-
-  const viewClaimDetails = (claim: Claim) => {
-    setSelectedClaim(claim)
-    setIsDetailsOpen(true)
-  }
+  };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-white text-black font-sans">
+      <div className="flex justify-between items-center p-6 shadow-lg border-b border-gray-300 rounded-lg">
         <div className="flex items-center gap-2">
-          <FileText className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">Patient Dashboard</h1>
         </div>
-        <div className="flex gap-4">
-          <Button variant="outline" onClick={fetchClaims} disabled={isLoading}>
-            <RotateCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                New Claim
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Submit a New Claim</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    placeholder="Enter your name"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Claim Amount</Label>
-                  <Input
-                    id="amount"
-                    name="amount"
-                    type="number"
-                    value={form.amount}
-                    onChange={handleChange}
-                    placeholder="Enter claim amount"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={form.description}
-                    onChange={handleChange}
-                    placeholder="Describe your claim"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="file">Supporting Document</Label>
-                  <Input
-                    id="file"
-                    name="file"
-                    type="file"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" className="w-full">
-                  Submit Claim
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-          <Button variant="destructive" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
+        <div className="flex gap-3">
+          <button
+            onClick={fetchClaims}
+            disabled={isLoading}
+            className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition"
+          >
+            <RotateCw size={18} />
+            {isLoading ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <button
+            onClick={handleNewClaim}
+            className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition"
+          >
+            <PlusCircle size={18} />
+            New
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition"
+          >
+            <LogOut size={18} />
             Logout
-          </Button>
+          </button>
         </div>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Claims History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {claims.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <p className="mt-4 text-lg text-muted-foreground">
-                No claims submitted yet.
-              </p>
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={() => setIsOpen(true)}
-              >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Submit your first claim
-              </Button>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Approved Amount</TableHead>
-                  <TableHead>Insurer Comments</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+      <select
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        className="px-4 py-2 bg-white shadow-sm rounded-lg mt-6 mb-4"
+      >
+        <option value="all">All Claims</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <div className="overflow-x-auto">
+        {claims.length === 0 ? (
+          <p className="text-gray-500">No claims submitted yet.</p>
+        ) : (
+          <div className="bg-gray-100 p-6 rounded-lg shadow-md">
+            <table className="w-full text-black text-center">
+              <thead>
+                <tr className="bg-black text-white">
+                  <th className="p-4 text-left">Date</th>
+                  <th className="p-4 text-left">Amount</th>
+                  <th className="p-4 text-left">Approved Amount</th>
+                  <th className="p-4 text-left">Status</th>
+                  <th className="p-4 text-left">Description</th>
+                  <th className="p-4 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
                 {claims.map((claim) => (
-                  <TableRow key={claim._id}>
-                    <TableCell>
-                      {new Date(claim.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>₹{claim.amount}</TableCell>
-                    <TableCell>{getStatusBadge(claim.status)}</TableCell>
-                    <TableCell>
-                      {claim.approvedAmount
-                        ? `₹${claim.approvedAmount}`
-                        : "Pending"}
-                    </TableCell>
-                    <TableCell>
-                      {claim.insurerComments ? (
-                        <span className="text-sm text-muted-foreground line-clamp-2">
-                          {claim.insurerComments}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">No comments yet</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => viewClaimDetails(claim)}
+                  <tr key={claim._id} className="hover:bg-gray-200 transition">
+                    <td className="p-4">{new Date(claim.createdAt).toLocaleDateString()}</td>
+                    <td className="p-4">₹{claim.amount}</td>
+                    <td className="p-4">
+                      ₹{claim.status === 'rejected' ? 0 : claim.approvedAmount || 'Pending'}
+                    </td>
+                    <td className="p-4">{statusBadge(claim.status)}</td>
+                    <td className="p-4">{claim.description}</td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => handleViewClaim(claim)}
+                        className="px-4 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition"
                       >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                        <Eye size={18} />
+                        View
+                      </button>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      {isNewClaimModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg w-96 text-black shadow-lg">
+            <h3 className="text-xl font-bold mb-4">New Claim</h3>
 
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Claim Details</DialogTitle>
-          </DialogHeader>
-          {selectedClaim && (
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Status</h3>
-                  {getStatusBadge(selectedClaim.status)}
-                </div>
-                <Separator />
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">Claim Amount</h3>
-                    <p>₹{selectedClaim.amount}</p>
-                  </div>
-                  {selectedClaim.approvedAmount && (
-                    <div>
-                      <h3 className="font-semibold mb-2">Approved Amount</h3>
-                      <p className="text-green-600">
-                      ₹{selectedClaim.approvedAmount}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <Separator />
-                <div>
-                  <h3 className="font-semibold mb-2">Description</h3>
-                  <p className="text-muted-foreground">
-                    {selectedClaim.description}
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <h3 className="font-semibold mb-2">Patient Information</h3>
-                  <p>{selectedClaim.patientName}</p>
-                  <p className="text-muted-foreground">
-                    {selectedClaim.patientEmail}
-                  </p>
-                </div>
-                {selectedClaim.insurerComments && (
-                  <>
-                    <Separator />
-                    <div>
-                      <h3 className="font-semibold mb-2">Insurer Comments</h3>
-                      <p className="text-muted-foreground">
-                        {selectedClaim.insurerComments}
-                      </p>
-                    </div>
-                  </>
-                )}
-                {(selectedClaim.supportingDocuments ?? []).length > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <h3 className="font-semibold mb-2">Supporting Documents</h3>
-                      <div className="space-y-2">
-                        {selectedClaim.supportingDocuments?.map((doc, index) => (
-                          <Button
-                            key={index}
-                            variant="outline"
-                            size="sm"
-                            className="w-full justify-start"
-                            asChild
-                          >
-                            <a
-                              href={doc}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <LinkIcon className="mr-2 h-4 w-4" />
-                              Document {index + 1}
-                            </a>
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+            <input
+              type="text"
+              name="patientName"
+              value={newClaim.patientName}
+              onChange={handleInputChange}
+              placeholder="Patient Name"
+              className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              name="patientEmail"
+              value={newClaim.patientEmail}
+              onChange={handleInputChange}
+              placeholder="Patient Email"
+              className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              name="description"
+              value={newClaim.description}
+              onChange={handleInputChange}
+              placeholder="Description"
+              className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
+            />
+
+            <input
+              type="number"
+              name="amount"
+              value={newClaim.amount}
+              onChange={handleInputChange}
+              placeholder="Amount"
+              className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="file"
+              name="supportingDocuments"
+              value={newClaim.supportingDocuments}
+              onChange={handleInputChange}
+              placeholder="Amount"
+              className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
+              accept="image/jpeg,image/png,image/jpg"
+            />
+
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={() => setIsNewClaimModalOpen(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitClaim}
+                className="px-4 py-2 bg-black text-white rounded-lg"
+              >
+                Submit
+              </button>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
+      {isModalOpen && selectedClaim && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg w-96 text-black shadow-lg">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold">Claim Details</h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-black"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="mt-4 space-y-3">
+              <p>
+                <strong>Date:</strong> {new Date(selectedClaim.createdAt).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Amount:</strong> ₹{selectedClaim.amount}
+              </p>
+              <p>
+                <strong>Approved Amount:</strong> ₹{selectedClaim.approvedAmount || 'Pending'}
+              </p>
+              <p>
+                <strong>Status:</strong> {statusBadge(selectedClaim.status)}
+              </p>
+              <p>
+                <strong>Description:</strong> {selectedClaim.description}
+              </p>
+              {selectedClaim.insurerComments && (
+                <p>
+                  <strong>Insurer Comments:</strong> {selectedClaim.insurerComments}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="mt-6 px-6 py-2 bg-black text-white rounded-lg w-full hover:opacity-80 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default PatientDashboard
+export default PatientDashboard;
