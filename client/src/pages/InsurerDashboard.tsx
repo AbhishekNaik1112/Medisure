@@ -1,15 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import {
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  X,
-  LogOut,
-  Loader2,
-  RotateCw,
-} from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, X, LogOut, Loader2, RotateCw } from 'lucide-react';
 
 const InsurerDashboard = () => {
   const navigate = useNavigate();
@@ -22,6 +14,7 @@ const InsurerDashboard = () => {
     patientName: string;
     amount: number;
     status: string;
+    documentLink: string;
   } | null>(null);
   const [filter, setFilter] = useState('all');
   const [approvedAmount, setApprovedAmount] = useState('');
@@ -138,21 +131,23 @@ const InsurerDashboard = () => {
           <table className="w-full text-black text-center">
             <thead>
               <tr className="bg-black text-white">
-                <th className="p-4 text-left">Date</th>
-                <th className="p-4 text-left">Patient</th>
-                <th className="p-4 text-left">Amount</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Action</th>
+                <th className="p-4 text-center">Date</th>
+                <th className="p-4 text-center">Patient</th>
+                <th className="p-4 text-center">Amount</th>
+                <th className="p-4 text-center">Status</th>
+                <th className="p-4 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {filteredClaims.map((claim) => (
                 <tr key={claim._id} className="hover:bg-gray-200 transition">
-                  <td className="p-4">{new Date(claim.createdAt).toLocaleDateString()}</td>
-                  <td className="p-4">{claim.patientName}</td>
-                  <td className="p-4">₹{claim.amount}</td>
-                  <td className="p-4">{statusBadge(claim.status)}</td>
-                  <td className="p-4">
+                  <td className="p-4 text-center">
+                    {new Date(claim.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="p-4 text-center">{claim.patientName}</td>
+                  <td className="p-4 text-center">₹{claim.amount}</td>
+                  <td className="p-4 text-center">{statusBadge(claim.status)}</td>
+                  <td className="p-4 text-center">
                     <button
                       onClick={() => setSelectedClaim(claim)}
                       className="px-4 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition shadow-md"
@@ -188,6 +183,17 @@ const InsurerDashboard = () => {
               </p>
               <p>
                 <strong>Status:</strong> {statusBadge(selectedClaim.status)}{' '}
+              </p>
+              <p>
+                <strong>Attached Documents:</strong>{' '}
+                <a
+                  className="text-blue-500"
+                  href={selectedClaim.documentLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Click me
+                </a>
               </p>
               <div className="mt-4">
                 <label className="block mb-2" htmlFor="approvedAmount">

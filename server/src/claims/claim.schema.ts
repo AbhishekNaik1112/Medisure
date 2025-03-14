@@ -30,7 +30,7 @@ export class Claim {
   status!: ClaimStatus;
 
   @Prop()
-  supportingDocuments!: string[];
+  documentLink!: string[];
 
   @Prop()
   insurerComments?: string;

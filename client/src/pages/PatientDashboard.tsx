@@ -22,7 +22,8 @@ interface Claim {
   patientName: string;
   patientEmail: string;
   insurerComments?: string;
-  supportingDocuments?: string;
+  documentLink?: string;
+  supportingDocuments?: File[];
 }
 
 const PatientDashboard = () => {
@@ -33,13 +34,15 @@ const PatientDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState('all');
   const [isNewClaimModalOpen, setIsNewClaimModalOpen] = useState(false);
+  const [link, setLink] = useState('');
 
   const [newClaim, setNewClaim] = useState({
     patientName: '',
     patientEmail: '',
     description: '',
     amount: '',
-    supportingDocuments: '',
+    documentLink: link,
+    supportingDocuments: [],
   });
 
   const fetchClaims = async () => {
@@ -76,9 +79,51 @@ const PatientDashboard = () => {
     setNewClaim((prev) => ({ ...prev, [name]: value }));
   };
 
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'medisure');
+    formData.append('cloud_name', 'dwemhal5h');
+
+    try {
+      const res = await fetch('https://api.cloudinary.com/v1_1/dwemhal5h/image/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      console.log(data.secure_url);
+      return data.secure_url;
+    } catch (error) {
+      console.error('Error uploading to Cloudinary:', error);
+      return '';
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      setIsLoading(true);
+      const uploadedUrl = await uploadToCloudinary(file);
+      setLink(uploadedUrl);
+      setIsLoading(false);
+
+      if (uploadedUrl) {
+        setNewClaim((prev) => ({ ...prev, documentLink: uploadedUrl }));
+      }
+    }
+  };
+
   const handleSubmitClaim = async () => {
     try {
-      await axios.post('http://localhost:3000/claims', newClaim, {
+      setIsLoading(true);
+
+      const claimData = {
+        ...newClaim,
+      };
+
+      await axios.post('http://localhost:3000/claims', claimData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
@@ -86,6 +131,8 @@ const PatientDashboard = () => {
       fetchClaims();
     } catch (error) {
       console.error('Error submitting claim:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -170,25 +217,25 @@ const PatientDashboard = () => {
             <table className="w-full text-black text-center">
               <thead>
                 <tr className="bg-black text-white">
-                  <th className="p-4 text-left">Date</th>
-                  <th className="p-4 text-left">Amount</th>
-                  <th className="p-4 text-left">Approved Amount</th>
-                  <th className="p-4 text-left">Status</th>
-                  <th className="p-4 text-left">Description</th>
-                  <th className="p-4 text-left">Actions</th>
+                  <th className="p-4 text-center">Date</th>
+                  <th className="p-4 text-center">Amount</th>
+                  <th className="p-4 text-center">Approved Amount</th>
+                  <th className="p-4 text-center">Status</th>
+                  <th className="p-4 text-center">Description</th>
+                  <th className="p-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {claims.map((claim) => (
                   <tr key={claim._id} className="hover:bg-gray-200 transition">
-                    <td className="p-4">{new Date(claim.createdAt).toLocaleDateString()}</td>
-                    <td className="p-4">₹{claim.amount}</td>
-                    <td className="p-4">
-                      ₹{claim.status === 'rejected' ? 0 : claim.approvedAmount || 'Pending'}
+                    <td className="p-4 text-center">{new Date(claim.createdAt).toLocaleDateString()}</td>
+                    <td className="p-4 text-center">₹{claim.amount}</td>
+                    <td className="p-4 text-center">
+                      ₹{claim.status === 'rejected' ? 0 : claim.approvedAmount || '--'}
                     </td>
-                    <td className="p-4">{statusBadge(claim.status)}</td>
-                    <td className="p-4">{claim.description}</td>
-                    <td className="p-4">
+                    <td className="p-4 text-center">{statusBadge(claim.status)}</td>
+                    <td className="p-4 text-center">{claim.description}</td>
+                    <td className="p-4 text-center">
                       <button
                         onClick={() => handleViewClaim(claim)}
                         className="px-4 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition"
@@ -220,11 +267,12 @@ const PatientDashboard = () => {
             <input
               type="text"
               name="patientEmail"
-              value={newClaim.patientEmail}
-              onChange={handleInputChange}
+              value={localStorage.getItem('email') || ''}
+              readOnly
               placeholder="Patient Email"
-              className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
+              className="w-full p-2 mb-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
             />
+
             <input
               type="text"
               name="description"
@@ -244,10 +292,7 @@ const PatientDashboard = () => {
             />
             <input
               type="file"
-              name="supportingDocuments"
-              value={newClaim.supportingDocuments}
-              onChange={handleInputChange}
-              placeholder="Amount"
+              onChange={handleFileChange}
               className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
               accept="image/jpeg,image/png,image/jpg"
             />
@@ -296,6 +341,17 @@ const PatientDashboard = () => {
               </p>
               <p>
                 <strong>Description:</strong> {selectedClaim.description}
+              </p>
+              <p>
+                <strong>Attached Documents:</strong>{' '}
+                <a
+                  className="text-blue-500"
+                  href={selectedClaim.documentLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Click me
+                </a>
               </p>
               {selectedClaim.insurerComments && (
                 <p>
