@@ -6,7 +6,14 @@ import { CheckCircle, Clock, AlertCircle, X, LogOut, Loader2, RotateCw } from 'l
 const InsurerDashboard = () => {
   const navigate = useNavigate();
   const [claims, setClaims] = useState<
-    { _id: string; createdAt: string; patientName: string; amount: number; status: string }[]
+    {
+      _id: string;
+      createdAt: string;
+      patientName: string;
+      amount: number;
+      status: string;
+      documentLink: string;
+    }[]
   >([]);
   const [selectedClaim, setSelectedClaim] = useState<{
     _id: string;
@@ -68,7 +75,7 @@ const InsurerDashboard = () => {
   );
 
   const statusBadge = (status: string) => {
-    const baseStyle = 'px-3 py-1 rounded-full text-sm font-semibold';
+    const baseStyle = 'inline-flex px-3 py-1 rounded-full text-sm font-semibold';
     switch (status) {
       case 'approved':
         return (
@@ -132,9 +139,10 @@ const InsurerDashboard = () => {
             <thead>
               <tr className="bg-black text-white">
                 <th className="p-4 text-center">Date</th>
-                <th className="p-4 text-center">Patient</th>
-                <th className="p-4 text-center">Amount</th>
+                <th className="p-4 text-center">Name</th>
+                <th className="p-4 text-center">Requested Amount</th>
                 <th className="p-4 text-center">Status</th>
+                <th className="p-4 text-center">Attached Document</th>
                 <th className="p-4 text-center">Action</th>
               </tr>
             </thead>
@@ -145,8 +153,18 @@ const InsurerDashboard = () => {
                     {new Date(claim.createdAt).toLocaleDateString()}
                   </td>
                   <td className="p-4 text-center">{claim.patientName}</td>
-                  <td className="p-4 text-center">₹{claim.amount}</td>
+                  <td className="p-4 text-center">₹{claim.amount.toLocaleString()}</td>
                   <td className="p-4 text-center">{statusBadge(claim.status)}</td>
+                  <td className="p-4 text-center">
+                    <a
+                      className="text-blue-500"
+                      href={claim.documentLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Click Me.
+                    </a>
+                  </td>
                   <td className="p-4 text-center">
                     <button
                       onClick={() => setSelectedClaim(claim)}
@@ -179,8 +197,9 @@ const InsurerDashboard = () => {
                 <strong>Patient:</strong> {selectedClaim.patientName}
               </p>
               <p>
-                <strong>Amount:</strong> ₹{selectedClaim.amount}
+                <strong>Requested Amount:</strong> ₹{selectedClaim.amount.toLocaleString()}
               </p>
+
               <p>
                 <strong>Status:</strong> {statusBadge(selectedClaim.status)}{' '}
               </p>

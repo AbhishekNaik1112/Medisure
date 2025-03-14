@@ -38,7 +38,7 @@ const PatientDashboard = () => {
 
   const [newClaim, setNewClaim] = useState({
     patientName: '',
-    patientEmail: '',
+    patientEmail: localStorage.getItem('email') || '',
     description: '',
     amount: '',
     documentLink: link,
@@ -132,6 +132,14 @@ const PatientDashboard = () => {
     } catch (error) {
       console.error('Error submitting claim:', error);
     } finally {
+      setNewClaim({
+        patientName: '',
+        patientEmail: localStorage.getItem('email') || '',
+        description: '',
+        amount: '',
+        documentLink: '',
+        supportingDocuments: [],
+      });
       setIsLoading(false);
     }
   };
@@ -142,8 +150,12 @@ const PatientDashboard = () => {
     navigate('/');
   };
 
+  const filteredClaims = claims.filter(
+    (claim) => filter === 'all' || claim.status.toLowerCase() === filter,
+  );
+
   const statusBadge = (status: string) => {
-    const baseStyle = 'px-3 py-1 rounded-full text-sm font-semibold';
+    const baseStyle = 'inline-flex px-3 py-1 rounded-full text-sm font-semibold';
     switch (status) {
       case 'approved':
         return (
@@ -178,7 +190,7 @@ const PatientDashboard = () => {
           <button
             onClick={fetchClaims}
             disabled={isLoading}
-            className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition"
+            className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition shadow-md"
           >
             <RotateCw size={18} />
             {isLoading ? 'Refreshing...' : 'Refresh'}
@@ -218,7 +230,7 @@ const PatientDashboard = () => {
               <thead>
                 <tr className="bg-black text-white">
                   <th className="p-4 text-center">Date</th>
-                  <th className="p-4 text-center">Amount</th>
+                  <th className="p-4 text-center">Requested Amount</th>
                   <th className="p-4 text-center">Approved Amount</th>
                   <th className="p-4 text-center">Status</th>
                   <th className="p-4 text-center">Description</th>
@@ -226,13 +238,21 @@ const PatientDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {claims.map((claim) => (
+                {filteredClaims.map((claim) => (
                   <tr key={claim._id} className="hover:bg-gray-200 transition">
-                    <td className="p-4 text-center">{new Date(claim.createdAt).toLocaleDateString()}</td>
-                    <td className="p-4 text-center">₹{claim.amount}</td>
                     <td className="p-4 text-center">
-                      ₹{claim.status === 'rejected' ? 0 : claim.approvedAmount || '--'}
+                      {new Date(claim.createdAt).toLocaleDateString()}
                     </td>
+                    <td className="p-4 text-center">₹{claim.amount.toLocaleString()}</td>
+                    <td className="p-4 text-center">
+                      ₹
+                      {claim.status === 'rejected'
+                        ? 0
+                        : claim.approvedAmount
+                        ? claim.approvedAmount.toLocaleString()
+                        : '--'}
+                    </td>
+
                     <td className="p-4 text-center">{statusBadge(claim.status)}</td>
                     <td className="p-4 text-center">{claim.description}</td>
                     <td className="p-4 text-center">
@@ -331,11 +351,15 @@ const PatientDashboard = () => {
                 <strong>Date:</strong> {new Date(selectedClaim.createdAt).toLocaleDateString()}
               </p>
               <p>
-                <strong>Amount:</strong> ₹{selectedClaim.amount}
+                <strong>Requested Amount:</strong> ₹{selectedClaim.amount.toLocaleString()}
               </p>
               <p>
-                <strong>Approved Amount:</strong> ₹{selectedClaim.approvedAmount || 'Pending'}
+                <strong>Approved Amount:</strong> ₹
+                {selectedClaim.approvedAmount
+                  ? selectedClaim.approvedAmount.toLocaleString()
+                  : '--'}
               </p>
+
               <p>
                 <strong>Status:</strong> {statusBadge(selectedClaim.status)}
               </p>
@@ -350,7 +374,7 @@ const PatientDashboard = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Click me
+                  Click me.
                 </a>
               </p>
               {selectedClaim.insurerComments && (
