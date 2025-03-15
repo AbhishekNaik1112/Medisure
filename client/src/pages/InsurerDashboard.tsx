@@ -38,7 +38,7 @@ const InsurerDashboard = () => {
       const response = await axios.get('https://claims-management-system-2d30.onrender.com/claims', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      setClaims(response.data);
+      setClaims(response.data.reverse());
     } catch (error) {
       console.error('Error:', error);
     } finally {

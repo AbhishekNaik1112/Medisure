@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  Bell,
 } from 'lucide-react';
 
 interface Claim {
@@ -26,6 +27,11 @@ interface Claim {
   supportingDocuments?: File[];
 }
 
+interface Notification {
+  approvedAmount: string;
+  status: string;
+}
+
 const PatientDashboard = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +41,9 @@ const PatientDashboard = () => {
   const [filter, setFilter] = useState('all');
   const [isNewClaimModalOpen, setIsNewClaimModalOpen] = useState(false);
   const [link, setLink] = useState('');
+  // Use an array for notifications so all can be rendered in order
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const [newClaim, setNewClaim] = useState({
     patientName: '',
@@ -45,14 +54,41 @@ const PatientDashboard = () => {
     supportingDocuments: [],
   });
 
+  // Fetch the user's notifications (all notifications in reverse order: most recent first)
+  const fetchUserNotifications = async () => {
+    try {
+      const email = localStorage.getItem('email');
+      const response = await axios.get(
+        `https://claims-management-system-2d30.onrender.com/users/${email}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        },
+      );
+
+      if (response.data.Notifications && response.data.Notifications.length > 0) {
+        // Reverse the array to show most recent notifications first
+        setNotifications(response.data.Notifications.reverse());
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserNotifications();
+  }, []);
+
   const fetchClaims = async () => {
     setIsLoading(true);
     try {
       const email = localStorage.getItem('email');
-      const response = await axios.get('https://claims-management-system-2d30.onrender.com/claims', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        params: { patientEmail: email },
-      });
+      const response = await axios.get(
+        'https://claims-management-system-2d30.onrender.com/claims',
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params: { patientEmail: email },
+        },
+      );
       setClaims(response.data);
     } catch {
       console.error('Error fetching claims');
@@ -84,16 +120,12 @@ const PatientDashboard = () => {
     formData.append('file', file);
     formData.append('upload_preset', import.meta.env.VITE_UPLOAD_PRESET);
     formData.append('cloud_name', import.meta.env.VITE_CLOUD_NAME);
-    // console.log(import.meta.env.VITE_UPLOAD_PRESET);
-    // console.log(import.meta.env.VITE_CLOUD_NAME);
     try {
       const res = await fetch('https://api.cloudinary.com/v1_1/dwemhal5h/image/upload', {
         method: 'POST',
         body: formData,
       });
-
       const data = await res.json();
-      // console.log(data.secure_url);
       return data.secure_url;
     } catch (error) {
       console.error('Error uploading to Cloudinary:', error);
@@ -104,12 +136,10 @@ const PatientDashboard = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-
       setIsLoading(true);
       const uploadedUrl = await uploadToCloudinary(file);
       setLink(uploadedUrl);
       setIsLoading(false);
-
       if (uploadedUrl) {
         setNewClaim((prev) => ({ ...prev, documentLink: uploadedUrl }));
       }
@@ -119,15 +149,12 @@ const PatientDashboard = () => {
   const handleSubmitClaim = async () => {
     try {
       setIsLoading(true);
-
       const claimData = {
         ...newClaim,
       };
-
       await axios.post('https://claims-management-system-2d30.onrender.com/claims', claimData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-
       setIsNewClaimModalOpen(false);
       fetchClaims();
     } catch (error) {
@@ -183,11 +210,42 @@ const PatientDashboard = () => {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans">
+      {/* Header */}
       <div className="flex justify-between items-center p-6 shadow-lg border-b border-gray-300 rounded-lg">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">Patient Dashboard</h1>
         </div>
-        <div className="flex gap-3">
+
+        <div className="flex items-center gap-6">
+          {/* Notification Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className="relative p-2"
+            >
+              <Bell size={24} className="text-black" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+            {isNotificationOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg p-3 z-50">
+                <h4 className="text-lg font-bold">Notifications</h4>
+                {notifications.length > 0 ? (
+                  notifications.map((notif, index) => (
+                    <p key={index} className="mt-2 text-sm border-b last:border-none pb-1">
+                      Approved Amount: ₹{notif.approvedAmount}, Status: {notif.status}
+                    </p>
+                  ))
+                ) : (
+                  <p className="mt-2 text-sm text-gray-500">No notifications</p>
+                )}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={fetchClaims}
             disabled={isLoading}
@@ -196,6 +254,7 @@ const PatientDashboard = () => {
             <RotateCw size={18} />
             {isLoading ? 'Refreshing...' : 'Refresh'}
           </button>
+
           <button
             onClick={handleNewClaim}
             className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition"
@@ -203,6 +262,7 @@ const PatientDashboard = () => {
             <PlusCircle size={18} />
             New
           </button>
+
           <button
             onClick={handleLogout}
             className="px-6 py-2 bg-black text-white rounded-lg flex items-center gap-2 hover:opacity-80 transition"
@@ -212,6 +272,8 @@ const PatientDashboard = () => {
           </button>
         </div>
       </div>
+
+      {/* Filter Dropdown */}
       <select
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
@@ -222,6 +284,8 @@ const PatientDashboard = () => {
         <option value="approved">Approved</option>
         <option value="rejected">Rejected</option>
       </select>
+
+      {/* Claims Table */}
       <div className="overflow-x-auto">
         {claims.length === 0 ? (
           <p className="text-gray-500">No claims submitted yet.</p>
@@ -253,7 +317,6 @@ const PatientDashboard = () => {
                         ? claim.approvedAmount.toLocaleString()
                         : '--'}
                     </td>
-
                     <td className="p-4 text-center">{statusBadge(claim.status)}</td>
                     <td className="p-4 text-center">{claim.description}</td>
                     <td className="p-4 text-center">
@@ -272,11 +335,12 @@ const PatientDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* New Claim Modal */}
       {isNewClaimModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg w-96 text-black shadow-lg">
             <h3 className="text-xl font-bold mb-4">New Claim</h3>
-
             <input
               type="text"
               name="patientName"
@@ -293,7 +357,6 @@ const PatientDashboard = () => {
               placeholder="Patient Email"
               className="w-full p-2 mb-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
             />
-
             <input
               type="text"
               name="description"
@@ -302,7 +365,6 @@ const PatientDashboard = () => {
               placeholder="Description"
               className="w-full p-2 mb-2 border border-gray-300 rounded-lg"
             />
-
             <input
               type="number"
               name="amount"
@@ -345,6 +407,8 @@ const PatientDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Claim Details Modal */}
       {isModalOpen && selectedClaim && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg w-96 text-black shadow-lg">
@@ -370,7 +434,6 @@ const PatientDashboard = () => {
                   ? selectedClaim.approvedAmount.toLocaleString()
                   : '--'}
               </p>
-
               <p>
                 <strong>Status:</strong> {statusBadge(selectedClaim.status)}
               </p>

@@ -1,6 +1,6 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, BadRequestException, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserRole } from './user.schema';
+import { User, UserRole } from './user.schema';
 
 @Controller('users')
 export class UsersController {
@@ -16,14 +16,21 @@ export class UsersController {
       }
     }
 
-    const user = await this.usersService.register(
+    return this.usersService.register(
       registerDto.email,
       registerDto.password,
       registerDto.role,
       registerDto.companyName,
       registerDto.licenseNumber
     );
+  }
 
+  @Get(':email')
+  async getUserByEmail(@Param('email') email: string): Promise<User> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
     return user;
   }
 }
