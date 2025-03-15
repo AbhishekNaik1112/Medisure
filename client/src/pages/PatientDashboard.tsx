@@ -75,6 +75,7 @@ const PatientDashboard = () => {
   };
 
   useEffect(() => {
+    fetchClaims();
     fetchUserNotifications();
   }, []);
 
@@ -93,13 +94,10 @@ const PatientDashboard = () => {
     } catch {
       console.error('Error fetching claims');
     } finally {
+      fetchUserNotifications();
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchClaims();
-  }, []);
 
   const handleViewClaim = (claim: Claim) => {
     setSelectedClaim(claim);
