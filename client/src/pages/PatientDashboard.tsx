@@ -173,6 +173,7 @@ const PatientDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('role');
     localStorage.removeItem('token');
+    localStorage.removeItem('email');
     navigate('/');
   };
 
