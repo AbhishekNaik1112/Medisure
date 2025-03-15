@@ -1,10 +1,10 @@
-# **CLAIMS MANAGEMENT SYSTEM**
+# **MEDISURE**
 A **full-stack claims management system** that allows patients to submit insurance claims and insurers to review and process them. Built using **React.js, NestJS, MongoDB**, and **JWT**-based authentication.
 
 ---
 
 ## 📜 **Table of Contents**
-- [**CLAIMS MANAGEMENT SYSTEM**](#claims-management-system)
+- [**MEDISURE**](#medisure)
   - [📜 **Table of Contents**](#-table-of-contents)
   - [🚀 **Features**](#-features)
     - [✅ Patient Side](#-patient-side)
