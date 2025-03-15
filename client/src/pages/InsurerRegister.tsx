@@ -8,11 +8,11 @@ const InsurerRegister = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -21,7 +21,7 @@ const InsurerRegister = () => {
       await axios.post('http://localhost:3000/users/register', { ...form, role: 'insurer' });
       localStorage.setItem('role', 'insurer');
       navigate('/insurer-dashboard');
-    } catch (error) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);
