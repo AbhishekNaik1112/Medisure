@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "description": "Backend for Claims Management System",
     "scripts": {
-        "start": "nest start",
+        "build": "nest build",
+        "start": "node dist/main.js",
         "start:dev": "nest start --watch",
         "test": "jest",
         "test:e2e": "jest --config ./test/jest-e2e.json"
@@ -30,6 +31,8 @@
         "@types/passport-jwt": "^4.0.1",
         "@types/supertest": "^6.0.2",
         "jest": "^29.7.0",
-        "supertest": "^7.0.0"
+        "supertest": "^7.0.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.8.2"
     }
 }
