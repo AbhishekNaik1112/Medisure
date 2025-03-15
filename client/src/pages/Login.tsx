@@ -34,6 +34,7 @@ const Login = () => {
         alert(error.response.data?.message || "Invalid email or password.");
       } else {
         alert("An unexpected error occurred.");
+        console.error("Login Error:", error);
       }
     } finally {
       setLoading(false);
