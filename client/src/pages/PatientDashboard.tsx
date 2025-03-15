@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -171,10 +172,13 @@ const PatientDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('role');
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    navigate('/');
+    try {
+      localStorage.removeItem('email');
+      localStorage.removeItem('role');
+      localStorage.removeItem('token');
+    } finally {
+      navigate('/');
+    }
   };
 
   const filteredClaims = claims.filter(

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -35,9 +36,12 @@ const InsurerDashboard = () => {
   const fetchClaims = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('https://claims-management-system-2d30.onrender.com/claims', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
+      const response = await axios.get(
+        'https://claims-management-system-2d30.onrender.com/claims',
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        },
+      );
       setClaims(response.data.reverse());
     } catch (error) {
       console.error('Error:', error);
@@ -47,10 +51,13 @@ const InsurerDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('role');
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    navigate('/');
+    try {
+      localStorage.removeItem('email');
+      localStorage.removeItem('role');
+      localStorage.removeItem('token');
+    } finally {
+      navigate('/');
+    }
   };
 
   const handleStatusUpdate = async (status: string) => {
