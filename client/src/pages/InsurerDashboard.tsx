@@ -35,7 +35,7 @@ const InsurerDashboard = () => {
   const fetchClaims = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('https://claims-management-system-server.vercel.app/claims', {
+      const response = await axios.get('https://claims-management-system-2d30.onrender.com/claims', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setClaims(response.data);
@@ -57,7 +57,7 @@ const InsurerDashboard = () => {
     setIsLoading(true);
     try {
       await axios.patch(
-        `https://claims-management-system-server.vercel.app/claims/${selectedClaim._id}`,
+        `https://claims-management-system-2d30.onrender.com/claims/${selectedClaim._id}`,
         { status, approvedAmount, insurerComments },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } },
       );

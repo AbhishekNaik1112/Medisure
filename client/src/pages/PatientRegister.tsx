@@ -20,7 +20,7 @@ const PatientRegister = () => {
     setSuccess(false);
 
     try {
-      await axios.post('https://claims-management-system-server.vercel.app/users/register', { ...form, role: 'patient' });
+      await axios.post('https://claims-management-system-2d30.onrender.com/users/register', { ...form, role: 'patient' });
       localStorage.setItem('role', 'patient');
       setSuccess(true);
 

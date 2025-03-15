@@ -18,7 +18,7 @@ const InsurerRegister = () => {
     setError('');
 
     try {
-      await axios.post('https://claims-management-system-server.vercel.app/users/register', { ...form, role: 'insurer' });
+      await axios.post('https://claims-management-system-2d30.onrender.com/users/register', { ...form, role: 'insurer' });
       localStorage.setItem('role', 'insurer');
       navigate('/insurer-dashboard');
     } catch {
