@@ -20,7 +20,7 @@ const InsurerRegister = () => {
     try {
       await axios.post('https://claims-management-system-2d30.onrender.com/users/register', { ...form, role: 'insurer' });
       localStorage.setItem('role', 'insurer');
-      navigate('/insurer-dashboard');
+      navigate('/login');
     } catch {
       setError('Registration failed. Please try again.');
     } finally {
