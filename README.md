@@ -15,9 +15,10 @@ A **full-stack claims management system** that allows patients to submit insuran
   - [⚙️ **Installation**](#️-installation)
     - [Server Setup (NestJS)](#server-setup-nestjs)
     - [Client Setup (React)](#client-setup-react)
-  - [🔒 **Authentication**](#-authentication)
-  - [🔗 **API Endpoints**](#-api-endpoints)
+  - [🔒 **Authentication** -](#-authentication--)
+  - [⛩️ **API Endpoints**](#️-api-endpoints)
   - [🧪 **Testing**](#-testing)
+  - [🔗 **Deployed Links**](#-deployed-links)
 
 ---
 
@@ -27,6 +28,7 @@ A **full-stack claims management system** that allows patients to submit insuran
 - **Submit Claims:** Enter details such as **name, email, amount, and description**.
 - **Upload Supporting Documents:** e.g., receipts, prescriptions.
 - **Track Claim Status:** View submitted claims and their current status.
+- **Notifications:** View latest updates on you claims.
 
 ### ✅ Insurer Side
 - **Review & Manage Claims:** See all submitted claims.
@@ -45,7 +47,7 @@ A **full-stack claims management system** that allows patients to submit insuran
 | Technology              | Purpose           |
 |-------------------------|-------------------|
 | **React.js**            | Frontend UI       |
-| **Tailwind CSS + shadcn** | Styling           |
+| **Tailwind CSS** | Styling           |
 | **NestJS**              | Backend API       |
 | **MongoDB**             | Database          |
 | **JWT (JSON Web Tokens)** | Authentication    |
@@ -118,18 +120,18 @@ claims-management/
 
 ---
 
-## 🔒 **Authentication**
+## 🔒 **Authentication** - 
 | Role      | Credentials           |
 |-----------|-----------------------|
-| **Patient** | `patient / patient123` |
-| **Insurer** | `insurer / insurer123` |
+| **Patient** | `patient1@gmail.com / patient1` |
+| **Insurer** | `insurer1@gmail.com / insurer1` |
 
 - Patients can **submit claims** and **view status**.
 - Insurers can **review, approve/reject claims**.
 
 ---
 
-## 🔗 **API Endpoints**
+## ⛩️ **API Endpoints**
 | Method    | Endpoint             | Description                     |
 |-----------|----------------------|---------------------------------|
 | **POST**  | `/auth/login`        | Login and get JWT token         |
@@ -148,3 +150,10 @@ To run end-to-end tests for the backend:
    ```bash
    npm run test:e2e
    ```
+
+   ---
+
+   ## 🔗 **Deployed Links**
+
+   1. Client Link - [Client](https://claims-management-system-client.vercel.app/landing)
+   2. Server Link - [Server](https://claims-management-system-2d30.onrender.com)
