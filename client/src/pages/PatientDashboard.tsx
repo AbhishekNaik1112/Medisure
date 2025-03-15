@@ -117,8 +117,8 @@ const PatientDashboard = () => {
   const uploadToCloudinary = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', import.meta.env.VITE_UPLOAD_PRESET);
-    formData.append('cloud_name', import.meta.env.VITE_CLOUD_NAME);
+    formData.append('upload_preset', "medisure");
+    formData.append('cloud_name', "dwemhal5h");
     try {
       const res = await fetch('https://api.cloudinary.com/v1_1/dwemhal5h/image/upload', {
         method: 'POST',
