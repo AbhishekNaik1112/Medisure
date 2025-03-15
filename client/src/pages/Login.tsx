@@ -17,7 +17,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`http://localhost:3000/auth/login`, form);
+      const response = await axios.post(`https://claims-management-system-server.vercel.app/auth/login`, form);
       const { role, token } = response.data;
 
       if (role && token) {

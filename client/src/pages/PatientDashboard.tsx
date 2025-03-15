@@ -49,7 +49,7 @@ const PatientDashboard = () => {
     setIsLoading(true);
     try {
       const email = localStorage.getItem('email');
-      const response = await axios.get('http://localhost:3000/claims', {
+      const response = await axios.get('https://claims-management-system-server.vercel.app/claims', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         params: { patientEmail: email },
       });
@@ -124,7 +124,7 @@ const PatientDashboard = () => {
         ...newClaim,
       };
 
-      await axios.post('http://localhost:3000/claims', claimData, {
+      await axios.post('https://claims-management-system-server.vercel.app/claims', claimData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
