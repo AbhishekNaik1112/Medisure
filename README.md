@@ -6,6 +6,7 @@ A **full-stack claims management system** that allows patients to submit insuran
 ## 📜 **Table of Contents**
 - [**MEDISURE**](#medisure)
   - [📜 **Table of Contents**](#-table-of-contents)
+  -  [🔗 **Deployed Links**](#-deployed-links)
   - [🚀 **Features**](#-features)
     - [✅ Patient Side](#-patient-side)
     - [✅ Insurer Side](#-insurer-side)
@@ -18,7 +19,6 @@ A **full-stack claims management system** that allows patients to submit insuran
   - [🔒 **Authentication** -](#-authentication--)
   - [⛩️ **API Endpoints**](#️-api-endpoints)
   - [🧪 **Testing**](#-testing)
-  - [🔗 **Deployed Links**](#-deployed-links)
 
 ---
 
