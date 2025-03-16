@@ -22,6 +22,13 @@ A **full-stack claims management system** that allows patients to submit insuran
 
 ---
 
+   ## 🔗 **Deployed Links**
+
+   1. Client Link - [Client](https://claims-management-system-client.vercel.app/landing)
+   2. Server Link - [Server](https://claims-management-system-2d30.onrender.com)
+
+---
+
 ## 🚀 **Features**
 
 ### ✅ Patient Side
@@ -152,8 +159,3 @@ To run end-to-end tests for the backend:
    ```
 
    ---
-
-   ## 🔗 **Deployed Links**
-
-   1. Client Link - [Client](https://claims-management-system-client.vercel.app/landing)
-   2. Server Link - [Server](https://claims-management-system-2d30.onrender.com)
